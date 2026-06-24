@@ -1,0 +1,11 @@
+set(lupdate_project_file "/home/kc/traintechdata/CMakeLists.txt")
+set(lupdate_translations "/home/kc/traintechdata/traintechdata_en_IN.ts")
+set(lupdate_include_paths "")
+set(lupdate_sources "")
+set(lupdate_subproject_count 1)
+
+set(lupdate_subproject1_source_dir "/home/kc/traintechdata")
+set(lupdate_subproject1_include_paths "/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/traintechdata_autogen/include;/home/kc/Qt/6.10.2/gcc_64/include/QtCore;/home/kc/Qt/6.10.2/gcc_64/include;/home/kc/Qt/6.10.2/gcc_64/mkspecs/linux-g++;/home/kc/Qt/6.10.2/gcc_64/include;/home/kc/Qt/6.10.2/gcc_64/include/QtWidgets;/home/kc/Qt/6.10.2/gcc_64/include;/home/kc/Qt/6.10.2/gcc_64/include/QtGui;/home/kc/Qt/6.10.2/gcc_64/include;/usr/include;/usr/include;/usr/include;/usr/include")
+set(lupdate_subproject1_sources "/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/traintechdata_autogen/mocs_compilation.cpp;main.cpp;mainwindow.cpp;mainwindow.h;mainwindow.ui;/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/.qt/rcc/traintechdata_translations.qrc;/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/traintechdata_en_IN.qm;/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/.qt/rcc/qrc_traintechdata_translations.cpp;/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/traintechdata_autogen/include/ui_mainwindow.h;/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/traintechdata_autogen/timestamp;/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/traintechdata_en_IN.qm.rule;/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/.qt/rcc/qrc_traintechdata_translations.cpp.rule;/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/traintechdata_autogen/timestamp.rule")
+set(lupdate_subproject1_excluded "")
+set(lupdate_subproject1_autogen_dir "/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/traintechdata_autogen")

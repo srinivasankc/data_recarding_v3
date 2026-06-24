@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_traintechdata_FILE /home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/traintechdata)
+set(__QT_DEPLOY_TARGET_traintechdata_TYPE EXECUTABLE)

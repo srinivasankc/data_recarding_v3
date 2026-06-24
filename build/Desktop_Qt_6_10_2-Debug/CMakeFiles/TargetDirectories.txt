@@ -1,0 +1,13 @@
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/traintechdata.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/traintechdata_lupdate.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/update_translations.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/traintechdata_lrelease.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/release_translations.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/edit_cache.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/rebuild_cache.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/list_install_components.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/install.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/install/local.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/install/strip.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/traintechdata_autogen_timestamp_deps.dir
+/home/kc/traintechdata/build/Desktop_Qt_6_10_2-Debug/CMakeFiles/traintechdata_autogen.dir
