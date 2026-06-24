@@ -1,44 +1,42 @@
 name: Build Windows EXE
 
 on:
-push:
-branches:
-- main
-workflow_dispatch:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-build:
-runs-on: windows-latest
+  build:
+    runs-on: windows-latest
 
-```
-steps:
-  - name: Checkout Source
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
 
-  - name: Install Qt
-    uses: jurplel/install-qt-action@v4
-    with:
-      version: '6.6.3'
-      cache: true
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.6.3'
+          cache: true
 
-  - name: Configure CMake
-    run: cmake -B build -S .
+      - name: Configure CMake
+        run: cmake -B build -S .
 
-  - name: Build Application
-    run: cmake --build build --config Release
+      - name: Build Application
+        run: cmake --build build --config Release
 
-  - name: Find EXE and Deploy Qt
-    shell: powershell
-    run: |
-      $exe = Get-ChildItem -Path build -Recurse -Filter traintechdata.exe | Select-Object -First 1
-      Write-Host "Found EXE:"
-      Write-Host $exe.FullName
-      windeployqt --release $exe.FullName
+      - name: Find EXE and Deploy Qt
+        shell: powershell
+        run: |
+          $exe = Get-ChildItem -Path build -Recurse -Filter traintechdata.exe | Select-Object -First 1
+          Write-Host "Found EXE:"
+          Write-Host $exe.FullName
+          windeployqt --release $exe.FullName
 
-  - name: Upload Application
-    uses: actions/upload-artifact@v4
-    with:
-      name: TrainTechData-Windows
-      path: build
-```
-
+      - name: Upload Application
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrainTechData-Windows
+          path: build
+:::
