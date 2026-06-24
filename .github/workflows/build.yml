@@ -1,42 +1,38 @@
 name: Build Windows EXE
 
 on:
-push:
-branches:
-- main
-workflow_dispatch:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-build:
-runs-on: windows-latest
+  build:
+    runs-on: windows-latest
 
-```
-steps:
-  - name: Checkout Source
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
 
-  - name: Install Qt
-    uses: jurplel/install-qt-action@v4
-    with:
-      version: '6.6.3'
-      cache: true
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.6.3'
+          cache: true
 
-  - name: Configure CMake
-    run: cmake -B build -S .
+      - name: Configure CMake
+        run: cmake -B build -S .
 
-  - name: Build Application
-    run: cmake --build build --config Release
+      - name: Build Application
+        run: cmake --build build --config Release
 
-  - name: List Generated Files
-    shell: powershell
-    run: |
-      Get-ChildItem -Path build -Recurse
+      - name: List Generated Files
+        shell: powershell
+        run: |
+          Get-ChildItem -Path build -Recurse
 
-  - name: Upload EXE
-    uses: actions/upload-artifact@v4
-    with:
-      name: TrainTechData-Windows
-      path: |
-        build/**/*.exe
-```
-
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrainTechData-Windows
+          path: build/**/*.exe
