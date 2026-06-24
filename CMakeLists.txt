@@ -1,38 +1,35 @@
 cmake_minimum_required(VERSION 3.19)
+
 project(traintechdata LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
 qt_standard_project_setup()
 
 qt_add_executable(traintechdata
-    WIN32 MACOSX_BUNDLE
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-)
-
-qt_add_translations(
-    TARGETS traintechdata
-    TS_FILES traintechdata_en_IN.ts
+WIN32
+main.cpp
+mainwindow.cpp
+mainwindow.h
+mainwindow.ui
 )
 
 target_link_libraries(traintechdata
-    PRIVATE
-        Qt::Core
-        Qt::Widgets
+PRIVATE
+Qt6::Core
+Qt6::Widgets
 )
 
 install(TARGETS traintechdata
-    BUNDLE  DESTINATION .
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+BUNDLE DESTINATION .
+RUNTIME DESTINATION bin
 )
 
 qt_generate_deploy_app_script(
-    TARGET traintechdata
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
+TARGET traintechdata
+OUTPUT_SCRIPT deploy_script
+NO_UNSUPPORTED_PLATFORM_ERROR
 )
+
 install(SCRIPT ${deploy_script})
+
