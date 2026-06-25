@@ -149,6 +149,7 @@ private:
     void setupFrozenTable();
     void setupDataTable();
     void setupAdminGroup(QVBoxLayout *settingsLayout);
+    void setupUserGroup(QVBoxLayout *settingsLayout);
     void setupThemeGroup(QVBoxLayout *settingsLayout);
     void setupHighlightingGroup(QVBoxLayout *settingsLayout);
     void setupSettingsButtons(QVBoxLayout *settingsLayout);
@@ -204,6 +205,8 @@ private:
     QLineEdit *searchEdit;
     QLineEdit *adminUsernameEdit;
     QLineEdit *adminPasswordEdit;
+    QLineEdit *userUsernameEdit;
+    QLineEdit *userPasswordEdit;
     QCheckBox *enableHighlightingCheckbox;
     QRadioButton *lightThemeRadio;
     QRadioButton *darkThemeRadio;

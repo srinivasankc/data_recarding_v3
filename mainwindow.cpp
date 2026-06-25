@@ -110,7 +110,7 @@ LoginWindow::LoginWindow(QWidget *parent)
 {
     setWindowFlags(Qt::Dialog);
     setModal(true);
-    setFixedSize(450, 650);
+    setFixedSize(450, 650);  // Increased height to accommodate edit button
     setWindowTitle("Login - TrainTech Electronics");
     m_backgroundColor = QColor(255, 255, 255);
 
@@ -302,8 +302,18 @@ void LoginWindow::onEditCredentials()
     tempAdminPassEdit->setPlaceholderText("Admin Password");
     tempAdminPassEdit->setStyleSheet("QLineEdit { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }");
 
+    QPushButton *toggleAdminPass = new QPushButton("👁 Show/Hide");
+    toggleAdminPass->setFixedSize(80, 30);
+    connect(toggleAdminPass, &QPushButton::clicked, [this]() {
+        if (tempAdminPassEdit->echoMode() == QLineEdit::Password)
+            tempAdminPassEdit->setEchoMode(QLineEdit::Normal);
+        else
+            tempAdminPassEdit->setEchoMode(QLineEdit::Password);
+    });
+
     adminLayout->addRow("Username:", tempAdminUserEdit);
     adminLayout->addRow("Password:", tempAdminPassEdit);
+    adminLayout->addRow("", toggleAdminPass);
     layout->addWidget(adminGroup);
 
     // User Section
@@ -320,8 +330,18 @@ void LoginWindow::onEditCredentials()
     tempUserPassEdit->setPlaceholderText("User Password");
     tempUserPassEdit->setStyleSheet("QLineEdit { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }");
 
+    QPushButton *toggleUserPass = new QPushButton("👁 Show/Hide");
+    toggleUserPass->setFixedSize(80, 30);
+    connect(toggleUserPass, &QPushButton::clicked, [this]() {
+        if (tempUserPassEdit->echoMode() == QLineEdit::Password)
+            tempUserPassEdit->setEchoMode(QLineEdit::Normal);
+        else
+            tempUserPassEdit->setEchoMode(QLineEdit::Password);
+    });
+
     userLayout->addRow("Username:", tempUserUserEdit);
     userLayout->addRow("Password:", tempUserPassEdit);
+    userLayout->addRow("", toggleUserPass);
     layout->addWidget(userGroup);
 
     // Password Requirements
@@ -467,7 +487,7 @@ void LoginWindow::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
         m_dragging = true;
-        m_dragPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
+        m_dragPosition = event->globalPos() - frameGeometry().topLeft();
         event->accept();
     }
 }
@@ -475,7 +495,7 @@ void LoginWindow::mousePressEvent(QMouseEvent *event)
 void LoginWindow::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_dragging && (event->buttons() & Qt::LeftButton)) {
-        move(event->globalPosition().toPoint() - m_dragPosition);
+        move(event->globalPos() - m_dragPosition);
         event->accept();
     }
 }
@@ -567,6 +587,8 @@ MainWindow::MainWindow(QWidget *parent)
     , searchEdit(nullptr)
     , adminUsernameEdit(nullptr)
     , adminPasswordEdit(nullptr)
+    , userUsernameEdit(nullptr)
+    , userPasswordEdit(nullptr)
     , enableHighlightingCheckbox(nullptr)
     , lightThemeRadio(nullptr)
     , darkThemeRadio(nullptr)
@@ -626,6 +648,8 @@ void MainWindow::changeDefaultCredentials(const QString& newAdminUser, const QSt
     // Update the UI text fields if they exist
     if (adminUsernameEdit) adminUsernameEdit->setText(m_adminUsername);
     if (adminPasswordEdit) adminPasswordEdit->setText(m_adminPassword);
+    if (userUsernameEdit) userUsernameEdit->setText(m_userUsername);
+    if (userPasswordEdit) userPasswordEdit->setText(m_userPassword);
 
     // Save to settings file
     saveSettingsInternal();
@@ -664,8 +688,16 @@ void MainWindow::onChangeDefaultCredentials()
     adminPassEdit->setEchoMode(QLineEdit::Password);
     adminPassEdit->setPlaceholderText("Admin Password");
 
+    QPushButton *toggleAdminPass = new QPushButton("👁 Show/Hide");
+    toggleAdminPass->setFixedSize(80, 25);
+    connect(toggleAdminPass, &QPushButton::clicked, [adminPassEdit]() {
+        adminPassEdit->setEchoMode(adminPassEdit->echoMode() == QLineEdit::Password
+                                       ? QLineEdit::Normal : QLineEdit::Password);
+    });
+
     adminLayout->addRow("Username:", adminUserEdit);
     adminLayout->addRow("Password:", adminPassEdit);
+    adminLayout->addRow("", toggleAdminPass);
     layout->addWidget(adminGroup);
 
     QGroupBox *userGroup = new QGroupBox("User Credentials");
@@ -678,8 +710,16 @@ void MainWindow::onChangeDefaultCredentials()
     userPassEdit->setEchoMode(QLineEdit::Password);
     userPassEdit->setPlaceholderText("User Password");
 
+    QPushButton *toggleUserPass = new QPushButton("👁 Show/Hide");
+    toggleUserPass->setFixedSize(80, 25);
+    connect(toggleUserPass, &QPushButton::clicked, [userPassEdit]() {
+        userPassEdit->setEchoMode(userPassEdit->echoMode() == QLineEdit::Password
+                                      ? QLineEdit::Normal : QLineEdit::Password);
+    });
+
     userLayout->addRow("Username:", userUserEdit);
     userLayout->addRow("Password:", userPassEdit);
+    userLayout->addRow("", toggleUserPass);
     layout->addWidget(userGroup);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout();
@@ -760,7 +800,6 @@ void MainWindow::setupUI()
     setupConnections();
     setupLoadingOverlay();
 }
-
 void MainWindow::setupTopToolbar(QVBoxLayout *mainLayout)
 {
     QHBoxLayout *topLayout = new QHBoxLayout();
@@ -805,7 +844,6 @@ void MainWindow::setupTopToolbar(QVBoxLayout *mainLayout)
     mainLayout->addLayout(topLayout);
     m_clearFiltersButton = clearFiltersButton;
 }
-
 void MainWindow::setupMenuButtons(QVBoxLayout *mainLayout)
 {
     QHBoxLayout *menuButtonsLayout = new QHBoxLayout();
@@ -877,7 +915,7 @@ void MainWindow::setupFrozenTable()
     frozenTableWidget->verticalHeader()->setVisible(false);
     frozenTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     frozenTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    frozenTableWidget->setSelectionMode(QAbstractItemView::NoSelection);
+    frozenTableWidget->setSelectionMode(QAbstractItemView::NoSelection);  // Disable default selection
 
     frozenTableWidget->setStyleSheet(
         "QTableWidget { background:white; color:black; gridline-color:#d0d0d0; }"
@@ -894,19 +932,7 @@ void MainWindow::setupFrozenTable()
 void MainWindow::setupDataTable()
 {
     dataTableWidget = new QTableWidget();
-    dataTableWidget->setSortingEnabled(true);
-    dataTableWidget->setSelectionBehavior(QAbstractItemView::SelectItems);
-    dataTableWidget->setAlternatingRowColors(true);
-    dataTableWidget->verticalHeader()->setVisible(false);
-    dataTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    dataTableWidget->setMouseTracking(true);
-    dataTableWidget->setSelectionMode(QAbstractItemView::NoSelection);
-
-    dataTableWidget->setStyleSheet(
-        "QTableWidget { background:white; color:black; gridline-color:#d0d0d0; }"
-        "QTableWidget::item:selected { background-color: transparent; }"
-        "QTableWidget::item:focus { outline: none; }");
-    QStringList headers;
+    headers.clear();   // Add this line
 
     headers << "DATE" << "TIME" << "SPEED" << "OHE_VOLT" << "OHE_CURR" << "ENER_CONS"
             << "BAT_VOLT" << "BP_PRES" << "TE_BE_DEM" << "TE_BE_BG1" << "TE_BE_BG2"
@@ -922,11 +948,11 @@ void MainWindow::setupDataTable()
     dataTableWidget->setColumnCount(43);
     QStringList dataHeaders = headers.mid(2);
     dataTableWidget->setHorizontalHeaderLabels(dataHeaders);
+
     for(int i = 0; i < 43; i++) {
         dataTableWidget->setColumnWidth(i, DEFAULT_COLUMN_WIDTH);
     }
 }
-
 void MainWindow::setupSettingsPage()
 {
     QWidget *settingsPage = new QWidget;
@@ -945,6 +971,7 @@ void MainWindow::setupSettingsPage()
     settingsLayout->addWidget(editNote);
 
     setupAdminGroup(settingsLayout);
+    setupUserGroup(settingsLayout);
     setupThemeGroup(settingsLayout);
     setupHighlightingGroup(settingsLayout);
     setupSettingsButtons(settingsLayout);
@@ -972,7 +999,53 @@ void MainWindow::setupAdminGroup(QVBoxLayout *settingsLayout)
     adminLayout->addRow("Username:", adminUsernameEdit);
     adminLayout->addRow("Password:", adminPasswordEdit);
 
+    QPushButton *toggleAdminPass = new QPushButton("👁 Show/Hide");
+    toggleAdminPass->setFixedSize(80, 25);
+    toggleAdminPass->setCursor(Qt::PointingHandCursor);
+    connect(toggleAdminPass, &QPushButton::clicked, [this]() {
+        if (adminPasswordEdit->echoMode() == QLineEdit::Password)
+            adminPasswordEdit->setEchoMode(QLineEdit::Normal);
+        else
+            adminPasswordEdit->setEchoMode(QLineEdit::Password);
+    });
+    adminLayout->addRow("", toggleAdminPass);
+
     settingsLayout->addWidget(adminGroup);
+}
+
+void MainWindow::setupUserGroup(QVBoxLayout *settingsLayout)
+{
+    QGroupBox *userGroup = createGroupBox("User Account");
+    QFormLayout *userLayout = new QFormLayout(userGroup);
+    userLayout->setSpacing(10);
+    userLayout->setContentsMargins(15, 15, 15, 15);
+
+    userUsernameEdit = new QLineEdit(m_userUsername);
+    userUsernameEdit->setMinimumHeight(30);
+    userUsernameEdit->setPlaceholderText("User Username");
+    userUsernameEdit->setStyleSheet("QLineEdit { padding: 5px; border: 1px solid #ccc; border-radius: 4px; }");
+
+    userPasswordEdit = new QLineEdit(m_userPassword);
+    userPasswordEdit->setEchoMode(QLineEdit::Password);
+    userPasswordEdit->setMinimumHeight(30);
+    userPasswordEdit->setPlaceholderText("User Password");
+    userPasswordEdit->setStyleSheet("QLineEdit { padding: 5px; border: 1px solid #ccc; border-radius: 4px; }");
+
+    userLayout->addRow("Username:", userUsernameEdit);
+    userLayout->addRow("Password:", userPasswordEdit);
+
+    QPushButton *toggleUserPass = new QPushButton("👁 Show/Hide");
+    toggleUserPass->setFixedSize(80, 25);
+    toggleUserPass->setCursor(Qt::PointingHandCursor);
+    connect(toggleUserPass, &QPushButton::clicked, [this]() {
+        if (userPasswordEdit->echoMode() == QLineEdit::Password)
+            userPasswordEdit->setEchoMode(QLineEdit::Normal);
+        else
+            userPasswordEdit->setEchoMode(QLineEdit::Password);
+    });
+    userLayout->addRow("", toggleUserPass);
+
+    settingsLayout->addWidget(userGroup);
 }
 
 void MainWindow::setupThemeGroup(QVBoxLayout *settingsLayout)
@@ -1004,7 +1077,6 @@ void MainWindow::setupHighlightingGroup(QVBoxLayout *settingsLayout)
     highlightLayout->addLayout(colorLayout);
     settingsLayout->addWidget(highlightGroup);
 }
-
 void MainWindow::setupSettingsButtons(QVBoxLayout *settingsLayout)
 {
     QHBoxLayout *buttonLayout = new QHBoxLayout();
@@ -1029,7 +1101,6 @@ void MainWindow::setupSettingsButtons(QVBoxLayout *settingsLayout)
     settingsLayout->addLayout(buttonLayout);
     settingsLayout->addStretch();
 }
-
 void MainWindow::setupConnections()
 {
     connect(pushButtonBrowse, &QPushButton::clicked, this, &MainWindow::browseFile);
@@ -1430,17 +1501,29 @@ void MainWindow::updateAccessRights()
     if (adminUsernameEdit) {
         adminUsernameEdit->setReadOnly(!isAdmin);
         adminPasswordEdit->setReadOnly(!isAdmin);
+        userUsernameEdit->setReadOnly(!isAdmin);
+        userPasswordEdit->setReadOnly(!isAdmin);
 
         if (isAdmin) {
             adminUsernameEdit->setStyleSheet("QLineEdit { padding: 5px; border: 2px solid #28a745; border-radius: 4px; background-color: #f0fff0; } QLineEdit:focus { border-color: #28a745; }");
             adminPasswordEdit->setStyleSheet("QLineEdit { padding: 5px; border: 2px solid #28a745; border-radius: 4px; background-color: #f0fff0; } QLineEdit:focus { border-color: #28a745; }");
+            userUsernameEdit->setStyleSheet("QLineEdit { padding: 5px; border: 2px solid #28a745; border-radius: 4px; background-color: #f0fff0; } QLineEdit:focus { border-color: #28a745; }");
+            userPasswordEdit->setStyleSheet("QLineEdit { padding: 5px; border: 2px solid #28a745; border-radius: 4px; background-color: #f0fff0; } QLineEdit:focus { border-color: #28a745; }");
+
             adminUsernameEdit->setPlaceholderText("Admin Username (editable)");
             adminPasswordEdit->setPlaceholderText("Admin Password (editable)");
+            userUsernameEdit->setPlaceholderText("User Username (editable)");
+            userPasswordEdit->setPlaceholderText("User Password (editable)");
         } else {
             adminUsernameEdit->setStyleSheet("QLineEdit { padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f5f5f5; }");
             adminPasswordEdit->setStyleSheet("QLineEdit { padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f5f5f5; }");
+            userUsernameEdit->setStyleSheet("QLineEdit { padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f5f5f5; }");
+            userPasswordEdit->setStyleSheet("QLineEdit { padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f5f5f5; }");
+
             adminUsernameEdit->setPlaceholderText("Admin Username (login required to edit)");
             adminPasswordEdit->setPlaceholderText("Admin Password (login required to edit)");
+            userUsernameEdit->setPlaceholderText("User Username (login required to edit)");
+            userPasswordEdit->setPlaceholderText("User Password (login required to edit)");
         }
     }
     if (saveSettingsButton) saveSettingsButton->setEnabled(isAdmin);
@@ -1493,6 +1576,8 @@ void MainWindow::loadSettings()
 
     if (adminUsernameEdit) adminUsernameEdit->setText(m_adminUsername);
     if (adminPasswordEdit) adminPasswordEdit->setText(m_adminPassword);
+    if (userUsernameEdit) userUsernameEdit->setText(m_userUsername);
+    if (userPasswordEdit) userPasswordEdit->setText(m_userPassword);
 }
 
 void MainWindow::saveSettings()
@@ -1504,8 +1589,11 @@ void MainWindow::saveSettings()
 
     QString newAdminUsername = adminUsernameEdit->text().trimmed();
     QString newAdminPassword = adminPasswordEdit->text().trimmed();
+    QString newUserUsername = userUsernameEdit->text().trimmed();
+    QString newUserPassword = userPasswordEdit->text().trimmed();
 
-    if (newAdminUsername.isEmpty() || newAdminPassword.isEmpty()) {
+    if (newAdminUsername.isEmpty() || newAdminPassword.isEmpty() ||
+        newUserUsername.isEmpty() || newUserPassword.isEmpty()) {
         QMessageBox::warning(this, "Invalid Input", "All username and password fields must be filled.");
         return;
     }
@@ -1515,8 +1603,15 @@ void MainWindow::saveSettings()
         return;
     }
 
+    if (newUserPassword.length() < 4) {
+        QMessageBox::warning(this, "Weak Password", "User password must be at least 4 characters long.");
+        return;
+    }
+
     m_adminUsername = newAdminUsername;
     m_adminPassword = newAdminPassword;
+    m_userUsername = newUserUsername;
+    m_userPassword = newUserPassword;
     m_currentTheme = darkThemeRadio->isChecked() ? "Dark" : "Light";
     m_highlightingEnabled = enableHighlightingCheckbox->isChecked();
 
@@ -1580,6 +1675,8 @@ void MainWindow::resetSettings()
         if (adminUsernameEdit) {
             adminUsernameEdit->setText(m_adminUsername);
             adminPasswordEdit->setText(m_adminPassword);
+            userUsernameEdit->setText(m_userUsername);
+            userPasswordEdit->setText(m_userPassword);
         }
         if (enableHighlightingCheckbox) enableHighlightingCheckbox->setChecked(true);
         if (lightThemeRadio) lightThemeRadio->setChecked(true);
@@ -1754,6 +1851,10 @@ void MainWindow::applyCrossHighlight(int row, int column)
 {
     if (!m_highlightingEnabled) return;
 
+    qDebug() << "Applying highlight - Row:" << row << "Column:" << column;
+    qDebug() << "Row color:" << m_rowHighlightColor.name();
+    qDebug() << "Column color:" << m_columnHighlightColor.name();
+
     // First, clear all existing highlights
     clearRowColumnHighlights();
 
@@ -1804,6 +1905,7 @@ void MainWindow::applyCrossHighlight(int row, int column)
 
 void MainWindow::onTableCellClicked(int row, int column)
 {
+    qDebug() << "Cell clicked - Row:" << row << "Column:" << column;
     applyCrossHighlight(row, column);
     QString columnName = dataTableWidget->horizontalHeaderItem(column) ?
                              dataTableWidget->horizontalHeaderItem(column)->text() : "";
@@ -1812,6 +1914,7 @@ void MainWindow::onTableCellClicked(int row, int column)
 
 void MainWindow::onFrozenTableCellClicked(int row, int column)
 {
+    qDebug() << "Frozen cell clicked - Row:" << row << "Column:" << column;
     if (!m_highlightingEnabled) return;
 
     clearRowColumnHighlights();
