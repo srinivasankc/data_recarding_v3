@@ -16,26 +16,28 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.10.2'
-          arch: 'win64_mingw'
+          arch: 'win64_msvc2022_64'
 
       - name: Configure
-        shell: cmd
+        shell: pwsh
         run: |
-          qt-cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake -B build `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_CXX_STANDARD=17 `
+            -DCMAKE_CXX_FLAGS="/Zc:__cplusplus"
 
       - name: Build
-        shell: cmd
+        shell: pwsh
         run: |
           cmake --build build --config Release
 
       - name: Deploy Qt
-        shell: cmd
+        shell: pwsh
         run: |
-          if not exist Release mkdir Release
-          for /r build %%f in (*.exe) do (
-            windeployqt "%%f"
-            copy "%%f" Release\
-          )
+          New-Item -ItemType Directory -Force Release
+          $exe = Get-ChildItem build -Recurse *.exe | Select-Object -First 1
+          windeployqt $exe.FullName
+          Copy-Item $exe.FullName Release
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
