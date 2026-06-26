@@ -2,8 +2,9 @@ name: Build Windows EXE
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -11,31 +12,49 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout Source
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.6.3'
-          cache: true
+          version: '5.15.2'
+          arch: win64_mingw81
 
-      - name: Configure CMake
-        run: cmake -B build -S .
+      - name: Setup MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
 
-      - name: Build Application
-        run: cmake --build build --config Release
-
-      - name: Find EXE and Deploy Qt
-        shell: powershell
+      - name: Show Versions
+        shell: cmd
         run: |
-          $exe = Get-ChildItem -Path build -Recurse -Filter traintechdata.exe | Select-Object -First 1
-          Write-Host "Found EXE:"
-          Write-Host $exe.FullName
-          windeployqt --release $exe.FullName
+          qmake -v
+          gcc --version
 
-      - name: Upload Application
+      - name: Configure
+        shell: cmd
+        run: |
+          qmake traintechdata.pro
+
+      - name: Build
+        shell: cmd
+        run: |
+          mingw32-make -j4
+
+      - name: Create Release Folder
+        shell: cmd
+        run: |
+          mkdir Release
+          copy release\traintechdata.exe Release\ || copy traintechdata.exe Release\
+
+      - name: Deploy Qt
+        shell: cmd
+        run: |
+          windeployqt Release\traintechdata.exe
+
+      - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: TrainTechData-Windows
-          path: build
+          path: Release
