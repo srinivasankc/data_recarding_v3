@@ -10,39 +10,32 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.10.2'
-          arch: win64_mingw
+          arch: 'win64_mingw'
 
       - name: Configure
-        shell: bash
+        shell: cmd
         run: |
-          cmake -B build \
-            -G "MinGW Makefiles" \
-            -DCMAKE_BUILD_TYPE=Release
+          qt-cmake -B build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        shell: bash
+        shell: cmd
         run: |
-          cmake --build build --parallel
-
-      - name: Find EXE
-        shell: bash
-        run: |
-          find build -name "*.exe"
+          cmake --build build --config Release
 
       - name: Deploy Qt
-        shell: bash
+        shell: cmd
         run: |
-          mkdir -p Release
-          EXE=$(find build -name "*.exe" | head -n 1)
-          windeployqt "$EXE"
-          cp "$EXE" Release/
+          if not exist Release mkdir Release
+          for /r build %%f in (*.exe) do (
+            windeployqt "%%f"
+            copy "%%f" Release\
+          )
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
