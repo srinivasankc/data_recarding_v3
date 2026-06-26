@@ -48,7 +48,9 @@
 #include <QStyle>
 #include <QScreen>
 #include <QDebug>
+#ifdef Q_OS_LINUX
 #include <sys/sysinfo.h>
+#endif
 
 // ==================== NO CONSTANTS HERE - THEY ARE IN mainwindow.h ====================
 
@@ -1267,7 +1269,13 @@ QString MainWindow::fixTimeFormat(const QString& time)
 
 bool MainWindow::hasSufficientMemory()
 {
-    struct sysinfo info;
+    #ifdef Q_OS_LINUX
+struct sysinfo info;
+sysinfo(&info);
+qDebug() << info.totalram;
+#else
+qDebug() << "Windows build";
+#endif
     if (sysinfo(&info) == 0) {
         unsigned long freeMemoryMB = info.freeram * info.mem_unit / (1024 * 1024);
         unsigned long totalMemoryMB = info.totalram * info.mem_unit / (1024 * 1024);
