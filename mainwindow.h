@@ -3,52 +3,37 @@
 
 #include <QMainWindow>
 #include <QDialog>
-#include <QLabel>
-#include <QLineEdit>
+#include <QTableWidget>
 #include <QPushButton>
+#include <QLineEdit>
+#include <QCheckBox>
+#include <QRadioButton>
+#include <QStackedWidget>
+#include <QLabel>
+#include <QProgressBar>
+#include <QMovie>
+#include <QPropertyAnimation>
+#include <QSet>
+#include <QHash>
+#include <QColor>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QTableWidget>
-#include <QStackedWidget>
-#include <QPropertyAnimation>
-#include <QColor>
-#include <QSet>
 #include <QGroupBox>
-#include <QRadioButton>
-#include <QCheckBox>
-#include <QProgressBar>
-#include <QMenu>
-#include <QAction>
-#include <QHeaderView>
-#include <QScrollBar>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QTimer>
-#include <QStatusBar>
-#include <QApplication>
-#include <QScreen>
-#include <QDebug>
-#include <QPainter>
-#include <QPainterPath>
+#include <QStringList>
 #include <QMouseEvent>
-#include <QEasingCurve>
-#include <QGraphicsDropShadowEffect>
-#include <QStyle>
-#include <QRegularExpression>
-#include <QColorDialog>
-#include <QInputDialog>
-#include <QDialogButtonBox>
-#include <QListWidget>
-#include <QListWidgetItem>
+#include <QPaintEvent>
 
-// Constants
-const int MAX_ROWS = 50000;
-const int CHUNK_SIZE = 1000;
-const int FROZEN_COLUMN_WIDTH_DATE = 100;
-const int FROZEN_COLUMN_WIDTH_TIME = 100;
-const int DEFAULT_COLUMN_WIDTH = 100;
+// ==================== CONSTANTS ====================
 
-// ==================== LOGIN WINDOW CLASS ====================
+#define FROZEN_COLUMN_WIDTH_DATE 90
+#define FROZEN_COLUMN_WIDTH_TIME 80
+#define DEFAULT_COLUMN_WIDTH 100
+#define MAX_ROWS 2000000
+#define MAX_VISIBLE_ROWS 100000
+#define CHUNK_SIZE_LOAD 5000
+
+// ==================== LOGIN WINDOW ====================
+
 class LoginWindow : public QDialog
 {
     Q_OBJECT
@@ -69,46 +54,47 @@ protected:
 private slots:
     void checkLogin();
     void togglePasswordVisibility();
+    void animateError();
     void onEditCredentials();
 
 private:
-    bool validateCredentials(const QString& adminUser, const QString& adminPass,
-                             const QString& userUser, const QString& userPass);
-    void animateError();
     void loadSavedCredentials();
     void saveCredentialsToFile();
+    bool validateCredentials(const QString& adminUser, const QString& adminPass,
+                             const QString& userUser, const QString& userPass);
+
     QColor backgroundColor() const { return m_backgroundColor; }
-    void setBackgroundColor(const QColor &color) { m_backgroundColor = color; update(); }
+    void setBackgroundColor(const QColor& color) { m_backgroundColor = color; }
 
     QLabel *logoLabel;
     QLabel *titleLabel;
     QLabel *subtitleLabel;
     QLineEdit *usernameEdit;
     QLineEdit *passwordEdit;
-    QPushButton *togglePasswordBtn;
     QPushButton *loginButton;
+    QPushButton *togglePasswordBtn;
     QLabel *errorLabel;
     QLabel *infoLabel;
     QPropertyAnimation *errorAnimation;
+
     QColor m_backgroundColor;
     bool m_dragging;
     QPoint m_dragPosition;
     QString m_loggedInRole;
 
-    // Default credentials - can be changed by user
     QString m_adminUsername;
     QString m_adminPassword;
     QString m_userUsername;
     QString m_userPassword;
 
-    // Temporary edit fields
     QLineEdit *tempAdminUserEdit;
     QLineEdit *tempAdminPassEdit;
     QLineEdit *tempUserUserEdit;
     QLineEdit *tempUserPassEdit;
 };
 
-// ==================== MAIN WINDOW CLASS ====================
+// ==================== MAIN WINDOW ====================
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -122,32 +108,38 @@ public:
 
 private slots:
     void browseFile();
+    void loadFile();
     void exportCSV();
     void findText();
     void clearSearch();
     void clearRowColumnHighlights();
-    void onTableCellClicked(int row, int column);
-    void onFrozenTableCellClicked(int row, int column);
-    void toggleHighlighting(bool enabled);
-    void changeRowHighlightColor();
-    void changeColumnHighlightColor();
-    void onHeaderClicked(int column);
-    void showLoginDialog();
+    void clearAllFilters();
     void saveSettings();
     void resetSettings();
     void applyTheme(bool checked);
+    void toggleHighlighting(bool enabled);
+    void changeRowHighlightColor();
+    void changeColumnHighlightColor();
+    void onTableCellClicked(int row, int column);
+    void onFrozenTableCellClicked(int row, int column);
+    void onHeaderClicked(int column);
+    void showLoginDialog();
+    void updateAccessRights();
     void switchToPage(int index);
     void onChangeDefaultCredentials();
+    void handleVirtualScroll(int value);
+    void loadMoreRows();
 
 private:
+    // UI Setup
     void setupUI();
     void setupTopToolbar(QVBoxLayout *mainLayout);
     void setupMenuButtons(QVBoxLayout *mainLayout);
     void setupMainContent(QVBoxLayout *mainLayout);
     void setupDataPage();
-    void setupSettingsPage();
     void setupFrozenTable();
     void setupDataTable();
+    void setupSettingsPage();
     void setupAdminGroup(QVBoxLayout *settingsLayout);
     void setupUserGroup(QVBoxLayout *settingsLayout);
     void setupThemeGroup(QVBoxLayout *settingsLayout);
@@ -155,9 +147,14 @@ private:
     void setupSettingsButtons(QVBoxLayout *settingsLayout);
     void setupConnections();
     void setupLoadingOverlay();
-    void loadFile();
     void loadDefaultFile();
     void setupEmptyTable();
+    void applyInitialTheme();
+    void showColumnFilterMenu(int column);
+    void applyColumnFilter(int column, const QStringList& selectedValues);
+    void clearColumnFilter(int column);
+    void updateFilterIndicator(int column, bool hasFilter);
+    void rebuildFilterMaps();
     void clearTables();
     void addFrozenRow(int row, const QString& date, const QString& time);
     QTableWidgetItem* createTableItem(const QString& text);
@@ -166,27 +163,24 @@ private:
     void refreshFrozenTableVisibility();
     void applyCrossHighlight(int row, int column);
     void clearSearchHighlights();
-    void applyLightTheme();
-    void applyDarkTheme();
-    void applyInitialTheme();
-    void updateAccessRights();
-    void loadSettings();
-    bool saveSettingsInternal();
-    void updateColorButtons();
-    void showColumnFilterMenu(int column);
-    void applyColumnFilter(int column, const QStringList& selectedValues);
-    void clearColumnFilter(int column);
-    void clearAllFilters();
-    void updateFilterIndicator(int column, bool hasFilter);
-    void rebuildFilterMaps();
     void showLoadingOverlay(const QString& message);
     void hideLoadingOverlay();
     void updateLoadingProgress(int percent, const QString& message);
-    QString fixTimeFormat(const QString& time);
-
     QPushButton* createButton(const QString& text, int height, const QSize& fixedSize = QSize());
     QGroupBox* createGroupBox(const QString& title);
+    QString fixTimeFormat(const QString& time);
+    void updateColorButtons();
+    void loadSettings();
+    bool saveSettingsInternal();
+    void applyLightTheme();
+    void applyDarkTheme();
 
+    // Large file handling methods
+    bool hasSufficientMemory();
+    void freeMemory();
+    void setupVirtualScrolling();
+
+    // UI Components
     QTableWidget *frozenTableWidget;
     QTableWidget *dataTableWidget;
     QPushButton *pushButtonBrowse;
@@ -211,6 +205,8 @@ private:
     QRadioButton *lightThemeRadio;
     QRadioButton *darkThemeRadio;
     QStackedWidget *stackedWidget;
+
+    // Loading overlay
     QWidget *m_loadingOverlay;
     QLabel *m_loadingLabel;
     QLabel *m_loadingProgressLabel;
@@ -218,6 +214,9 @@ private:
     QMovie *m_loadingMovie;
     bool m_loadingActive;
 
+    // Data
+    QString currentFile;
+    QStringList headers;
     int m_maxRowsLoaded;
     int m_currentHighlightedRow;
     int m_currentHighlightedColumn;
@@ -226,20 +225,27 @@ private:
     bool m_highlightingEnabled;
     QString m_currentRole;
     QString m_currentTheme;
-
     QString m_adminUsername;
     QString m_adminPassword;
     QString m_userUsername;
     QString m_userPassword;
 
-    QString currentFile;
-    QStringList headers;
-    QMap<int, QStringList> m_columnFilters;
-    QMap<int, QSet<QString>> m_columnUniqueValues;
-    QVector<QVector<QString>> m_cachedData;
+    // Filtering
+    QHash<int, QStringList> m_columnFilters;
+    QHash<int, QSet<QString>> m_columnUniqueValues;
+    QSet<QTableWidgetItem*> m_searchHighlightedItems;
+
+    // Large file handling
+    QStringList m_fullFileData;
+    int m_totalRowsInFile;
+    int m_currentPage;
+    bool m_fileFullyLoaded;
+    QHash<int, QStringList> m_rowCache;
     int m_currentCacheStartRow;
     int m_currentCacheEndRow;
-    QSet<QTableWidgetItem*> m_searchHighlightedItems;
+    int m_cacheStartRow;
+    int m_cacheEndRow;
+    QHash<int, QStringList> m_cachedData;
 };
 
 #endif // MAINWINDOW_H

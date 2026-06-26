@@ -43,6 +43,7 @@ template <> constexpr inline auto LoginWindow::qt_create_metaobjectdata<qt_meta_
         "checkLogin",
         "",
         "togglePasswordVisibility",
+        "animateError",
         "onEditCredentials",
         "backgroundColor",
         "QColor"
@@ -53,12 +54,14 @@ template <> constexpr inline auto LoginWindow::qt_create_metaobjectdata<qt_meta_
         QtMocHelpers::SlotData<void()>(1, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'togglePasswordVisibility'
         QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onEditCredentials'
+        // Slot 'animateError'
         QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onEditCredentials'
+        QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
         // property 'backgroundColor'
-        QtMocHelpers::PropertyData<QColor>(5, 0x80000000 | 6, QMC::DefaultPropertyFlags | QMC::Writable | QMC::EnumOrFlag | QMC::StdCppSet),
+        QtMocHelpers::PropertyData<QColor>(6, 0x80000000 | 7, QMC::DefaultPropertyFlags | QMC::Writable | QMC::EnumOrFlag | QMC::StdCppSet),
     };
     QtMocHelpers::UintData qt_enums {
     };
@@ -82,7 +85,8 @@ void LoginWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         switch (_id) {
         case 0: _t->checkLogin(); break;
         case 1: _t->togglePasswordVisibility(); break;
-        case 2: _t->onEditCredentials(); break;
+        case 2: _t->animateError(); break;
+        case 3: _t->onEditCredentials(); break;
         default: ;
         }
     }
@@ -121,14 +125,14 @@ int LoginWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 3)
+        if (_id < 4)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 3;
+        _id -= 4;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 3)
+        if (_id < 4)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 3;
+        _id -= 4;
     }
     if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty
             || _c == QMetaObject::ResetProperty || _c == QMetaObject::BindableProperty
@@ -149,76 +153,94 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         "MainWindow",
         "browseFile",
         "",
+        "loadFile",
         "exportCSV",
         "findText",
         "clearSearch",
         "clearRowColumnHighlights",
-        "onTableCellClicked",
-        "row",
-        "column",
-        "onFrozenTableCellClicked",
-        "toggleHighlighting",
-        "enabled",
-        "changeRowHighlightColor",
-        "changeColumnHighlightColor",
-        "onHeaderClicked",
-        "showLoginDialog",
+        "clearAllFilters",
         "saveSettings",
         "resetSettings",
         "applyTheme",
         "checked",
+        "toggleHighlighting",
+        "enabled",
+        "changeRowHighlightColor",
+        "changeColumnHighlightColor",
+        "onTableCellClicked",
+        "row",
+        "column",
+        "onFrozenTableCellClicked",
+        "onHeaderClicked",
+        "showLoginDialog",
+        "updateAccessRights",
         "switchToPage",
         "index",
-        "onChangeDefaultCredentials"
+        "onChangeDefaultCredentials",
+        "handleVirtualScroll",
+        "value",
+        "loadMoreRows"
     };
 
     QtMocHelpers::UintData qt_methods {
         // Slot 'browseFile'
         QtMocHelpers::SlotData<void()>(1, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'exportCSV'
+        // Slot 'loadFile'
         QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'findText'
+        // Slot 'exportCSV'
         QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'clearSearch'
+        // Slot 'findText'
         QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'clearRowColumnHighlights'
+        // Slot 'clearSearch'
         QtMocHelpers::SlotData<void()>(6, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onTableCellClicked'
-        QtMocHelpers::SlotData<void(int, int)>(7, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 8 }, { QMetaType::Int, 9 },
-        }}),
-        // Slot 'onFrozenTableCellClicked'
-        QtMocHelpers::SlotData<void(int, int)>(10, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 8 }, { QMetaType::Int, 9 },
-        }}),
-        // Slot 'toggleHighlighting'
+        // Slot 'clearRowColumnHighlights'
+        QtMocHelpers::SlotData<void()>(7, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'clearAllFilters'
+        QtMocHelpers::SlotData<void()>(8, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'saveSettings'
+        QtMocHelpers::SlotData<void()>(9, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'resetSettings'
+        QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'applyTheme'
         QtMocHelpers::SlotData<void(bool)>(11, 2, QMC::AccessPrivate, QMetaType::Void, {{
             { QMetaType::Bool, 12 },
         }}),
+        // Slot 'toggleHighlighting'
+        QtMocHelpers::SlotData<void(bool)>(13, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Bool, 14 },
+        }}),
         // Slot 'changeRowHighlightColor'
-        QtMocHelpers::SlotData<void()>(13, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(15, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'changeColumnHighlightColor'
-        QtMocHelpers::SlotData<void()>(14, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(16, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onTableCellClicked'
+        QtMocHelpers::SlotData<void(int, int)>(17, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 18 }, { QMetaType::Int, 19 },
+        }}),
+        // Slot 'onFrozenTableCellClicked'
+        QtMocHelpers::SlotData<void(int, int)>(20, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 18 }, { QMetaType::Int, 19 },
+        }}),
         // Slot 'onHeaderClicked'
-        QtMocHelpers::SlotData<void(int)>(15, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 9 },
+        QtMocHelpers::SlotData<void(int)>(21, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 19 },
         }}),
         // Slot 'showLoginDialog'
-        QtMocHelpers::SlotData<void()>(16, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'saveSettings'
-        QtMocHelpers::SlotData<void()>(17, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'resetSettings'
-        QtMocHelpers::SlotData<void()>(18, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'applyTheme'
-        QtMocHelpers::SlotData<void(bool)>(19, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Bool, 20 },
-        }}),
+        QtMocHelpers::SlotData<void()>(22, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'updateAccessRights'
+        QtMocHelpers::SlotData<void()>(23, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'switchToPage'
-        QtMocHelpers::SlotData<void(int)>(21, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 22 },
+        QtMocHelpers::SlotData<void(int)>(24, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 25 },
         }}),
         // Slot 'onChangeDefaultCredentials'
-        QtMocHelpers::SlotData<void()>(23, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(26, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'handleVirtualScroll'
+        QtMocHelpers::SlotData<void(int)>(27, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 28 },
+        }}),
+        // Slot 'loadMoreRows'
+        QtMocHelpers::SlotData<void()>(29, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -243,22 +265,27 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: _t->browseFile(); break;
-        case 1: _t->exportCSV(); break;
-        case 2: _t->findText(); break;
-        case 3: _t->clearSearch(); break;
-        case 4: _t->clearRowColumnHighlights(); break;
-        case 5: _t->onTableCellClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
-        case 6: _t->onFrozenTableCellClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
-        case 7: _t->toggleHighlighting((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
-        case 8: _t->changeRowHighlightColor(); break;
-        case 9: _t->changeColumnHighlightColor(); break;
-        case 10: _t->onHeaderClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
-        case 11: _t->showLoginDialog(); break;
-        case 12: _t->saveSettings(); break;
-        case 13: _t->resetSettings(); break;
-        case 14: _t->applyTheme((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
-        case 15: _t->switchToPage((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
-        case 16: _t->onChangeDefaultCredentials(); break;
+        case 1: _t->loadFile(); break;
+        case 2: _t->exportCSV(); break;
+        case 3: _t->findText(); break;
+        case 4: _t->clearSearch(); break;
+        case 5: _t->clearRowColumnHighlights(); break;
+        case 6: _t->clearAllFilters(); break;
+        case 7: _t->saveSettings(); break;
+        case 8: _t->resetSettings(); break;
+        case 9: _t->applyTheme((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
+        case 10: _t->toggleHighlighting((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
+        case 11: _t->changeRowHighlightColor(); break;
+        case 12: _t->changeColumnHighlightColor(); break;
+        case 13: _t->onTableCellClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
+        case 14: _t->onFrozenTableCellClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
+        case 15: _t->onHeaderClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
+        case 16: _t->showLoginDialog(); break;
+        case 17: _t->updateAccessRights(); break;
+        case 18: _t->switchToPage((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
+        case 19: _t->onChangeDefaultCredentials(); break;
+        case 20: _t->handleVirtualScroll((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
+        case 21: _t->loadMoreRows(); break;
         default: ;
         }
     }
@@ -283,14 +310,14 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 17)
+        if (_id < 22)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 17;
+        _id -= 22;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 17)
+        if (_id < 22)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 17;
+        _id -= 22;
     }
     return _id;
 }

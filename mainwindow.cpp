@@ -48,6 +48,9 @@
 #include <QStyle>
 #include <QScreen>
 #include <QDebug>
+#include <sys/sysinfo.h>
+
+// ==================== NO CONSTANTS HERE - THEY ARE IN mainwindow.h ====================
 
 // ==================== LOGIN WINDOW IMPLEMENTATION ====================
 
@@ -74,7 +77,6 @@ void LoginWindow::loadSavedCredentials()
         }
     }
 
-    // Update info label
     if (infoLabel) {
         infoLabel->setText(QString("Default Admin: %1\nDefault User: %2")
                                .arg(m_adminUsername).arg(m_userUsername));
@@ -110,7 +112,7 @@ LoginWindow::LoginWindow(QWidget *parent)
 {
     setWindowFlags(Qt::Dialog);
     setModal(true);
-    setFixedSize(450, 650);  // Increased height to accommodate edit button
+    setFixedSize(450, 650);
     setWindowTitle("Login - TrainTech Electronics");
     m_backgroundColor = QColor(255, 255, 255);
 
@@ -209,7 +211,6 @@ LoginWindow::LoginWindow(QWidget *parent)
     loginButton->setStyleSheet("QPushButton { background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0078d7, stop:1 #00a2ff); color: white; font-size: 15px; font-weight: bold; border: none; border-radius: 8px; padding: 10px; } QPushButton:hover { background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0086e8, stop:1 #14aeff); }");
     mainLayout->addWidget(loginButton);
 
-    // Add Edit Credentials Button
     QPushButton *editCredentialsBtn = new QPushButton("✏️ Edit Default Credentials");
     editCredentialsBtn->setMinimumHeight(35);
     editCredentialsBtn->setCursor(Qt::PointingHandCursor);
@@ -225,7 +226,6 @@ LoginWindow::LoginWindow(QWidget *parent)
     infoLabel->setStyleSheet("QLabel { color: #999; font-size: 11px; margin-top: 10px; }");
     mainLayout->addWidget(infoLabel);
 
-    // Load saved credentials after UI setup
     loadSavedCredentials();
 
     connect(loginButton, &QPushButton::clicked, this, &LoginWindow::checkLogin);
@@ -288,7 +288,6 @@ void LoginWindow::onEditCredentials()
     warningLabel->setStyleSheet("QLabel { color: #ff9800; font-size: 12px; padding: 5px; background-color: #fff3e0; border-radius: 4px; }");
     layout->addWidget(warningLabel);
 
-    // Admin Section
     QGroupBox *adminGroup = new QGroupBox("Administrator Account");
     adminGroup->setStyleSheet("QGroupBox { font-weight: bold; border: 2px solid #28a745; border-radius: 8px; margin-top: 10px; padding-top: 10px; }");
     QFormLayout *adminLayout = new QFormLayout(adminGroup);
@@ -316,7 +315,6 @@ void LoginWindow::onEditCredentials()
     adminLayout->addRow("", toggleAdminPass);
     layout->addWidget(adminGroup);
 
-    // User Section
     QGroupBox *userGroup = new QGroupBox("User Account");
     userGroup->setStyleSheet("QGroupBox { font-weight: bold; border: 2px solid #17a2b8; border-radius: 8px; margin-top: 10px; padding-top: 10px; }");
     QFormLayout *userLayout = new QFormLayout(userGroup);
@@ -344,12 +342,10 @@ void LoginWindow::onEditCredentials()
     userLayout->addRow("", toggleUserPass);
     layout->addWidget(userGroup);
 
-    // Password Requirements
     QLabel *reqLabel = new QLabel("Password Requirements:\n• Minimum 4 characters\n• Cannot be empty");
     reqLabel->setStyleSheet("QLabel { color: #666; font-size: 11px; padding: 5px; background-color: #e9ecef; border-radius: 4px; }");
     layout->addWidget(reqLabel);
 
-    // Buttons
     QHBoxLayout *buttonLayout = new QHBoxLayout();
 
     QPushButton *saveButton = new QPushButton("💾 Save Changes");
@@ -366,7 +362,6 @@ void LoginWindow::onEditCredentials()
     buttonLayout->addWidget(resetButton);
     layout->addLayout(buttonLayout);
 
-    // Connect buttons
     connect(saveButton, &QPushButton::clicked, [&]() {
         QString newAdminUser = tempAdminUserEdit->text().trimmed();
         QString newAdminPass = tempAdminPassEdit->text().trimmed();
@@ -374,20 +369,16 @@ void LoginWindow::onEditCredentials()
         QString newUserPass = tempUserPassEdit->text().trimmed();
 
         if (validateCredentials(newAdminUser, newAdminPass, newUserUser, newUserPass)) {
-            // Save credentials locally in LoginWindow
             m_adminUsername = newAdminUser;
             m_adminPassword = newAdminPass;
             m_userUsername = newUserUser;
             m_userPassword = newUserPass;
 
-            // Save to persistent file
             saveCredentialsToFile();
 
-            // Update info label
             infoLabel->setText(QString("Default Admin: %1\nDefault User: %2")
                                    .arg(m_adminUsername).arg(m_userUsername));
 
-            // Also update MainWindow's credentials
             MainWindow *mainWin = qobject_cast<MainWindow*>(parent());
             if (mainWin) {
                 mainWin->changeDefaultCredentials(newAdminUser, newAdminPass, newUserUser, newUserPass);
@@ -459,7 +450,6 @@ void LoginWindow::updateCredentials(const QString& adminUser, const QString& adm
     infoLabel->setText(QString("Default Admin: %1\nDefault User: %2")
                            .arg(m_adminUsername).arg(m_userUsername));
 
-    // Save to persistent file
     saveCredentialsToFile();
 }
 
@@ -487,7 +477,7 @@ void LoginWindow::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
         m_dragging = true;
-        m_dragPosition = event->globalPos() - frameGeometry().topLeft();
+        m_dragPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
         event->accept();
     }
 }
@@ -495,7 +485,7 @@ void LoginWindow::mousePressEvent(QMouseEvent *event)
 void LoginWindow::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_dragging && (event->buttons() & Qt::LeftButton)) {
-        move(event->globalPos() - m_dragPosition);
+        move(event->globalPosition().toPoint() - m_dragPosition);
         event->accept();
     }
 }
@@ -613,6 +603,11 @@ MainWindow::MainWindow(QWidget *parent)
     , m_userPassword("user123")
     , m_currentCacheStartRow(0)
     , m_currentCacheEndRow(0)
+    , m_totalRowsInFile(0)
+    , m_currentPage(0)
+    , m_fileFullyLoaded(false)
+    , m_cacheStartRow(0)
+    , m_cacheEndRow(0)
 {
     setupUI();
     loadSettings();
@@ -620,7 +615,6 @@ MainWindow::MainWindow(QWidget *parent)
     applyInitialTheme();
     statusBar()->showMessage("Welcome to TrainTech Electronics Data Viewer", 5000);
 
-    // Ensure highlighting is enabled
     m_highlightingEnabled = true;
     if (enableHighlightingCheckbox) {
         enableHighlightingCheckbox->setChecked(true);
@@ -634,6 +628,7 @@ MainWindow::~MainWindow()
     m_columnFilters.clear();
     m_columnUniqueValues.clear();
     m_cachedData.clear();
+    m_fullFileData.clear();
     if (m_currentRole == "Admin") saveSettingsInternal();
 }
 
@@ -645,15 +640,12 @@ void MainWindow::changeDefaultCredentials(const QString& newAdminUser, const QSt
     m_userUsername = newUserUser;
     m_userPassword = newUserPass;
 
-    // Update the UI text fields if they exist
     if (adminUsernameEdit) adminUsernameEdit->setText(m_adminUsername);
     if (adminPasswordEdit) adminPasswordEdit->setText(m_adminPassword);
     if (userUsernameEdit) userUsernameEdit->setText(m_userUsername);
     if (userPasswordEdit) userPasswordEdit->setText(m_userPassword);
 
-    // Save to settings file
     saveSettingsInternal();
-
     statusBar()->showMessage("Default credentials updated successfully!", 3000);
 }
 
@@ -800,6 +792,7 @@ void MainWindow::setupUI()
     setupConnections();
     setupLoadingOverlay();
 }
+
 void MainWindow::setupTopToolbar(QVBoxLayout *mainLayout)
 {
     QHBoxLayout *topLayout = new QHBoxLayout();
@@ -844,6 +837,7 @@ void MainWindow::setupTopToolbar(QVBoxLayout *mainLayout)
     mainLayout->addLayout(topLayout);
     m_clearFiltersButton = clearFiltersButton;
 }
+
 void MainWindow::setupMenuButtons(QVBoxLayout *mainLayout)
 {
     QHBoxLayout *menuButtonsLayout = new QHBoxLayout();
@@ -882,14 +876,24 @@ void MainWindow::setupDataPage()
 {
     QWidget *dataPage = new QWidget;
     QVBoxLayout *dataLayout = new QVBoxLayout(dataPage);
-    dataLayout->setContentsMargins(0, 0, 0, 0);
 
     QHBoxLayout *tableLayout = new QHBoxLayout();
-    tableLayout->setSpacing(0);
-    tableLayout->setContentsMargins(0, 0, 0, 0);
 
     setupFrozenTable();
     setupDataTable();
+
+    // ===== Add here =====
+    QFont tableFont("Calibri", 11);
+
+    frozenTableWidget->setFont(tableFont);
+    dataTableWidget->setFont(tableFont);
+
+    frozenTableWidget->horizontalHeader()->setFont(tableFont);
+    dataTableWidget->horizontalHeader()->setFont(tableFont);
+
+    frozenTableWidget->verticalHeader()->setFont(tableFont);
+    dataTableWidget->verticalHeader()->setFont(tableFont);
+    // ====================
 
     connect(frozenTableWidget->verticalScrollBar(), &QScrollBar::valueChanged,
             dataTableWidget->verticalScrollBar(), &QScrollBar::setValue);
@@ -898,14 +902,12 @@ void MainWindow::setupDataPage()
 
     tableLayout->addWidget(frozenTableWidget);
     tableLayout->addWidget(dataTableWidget);
-    tableLayout->setStretchFactor(frozenTableWidget, 0);
-    tableLayout->setStretchFactor(dataTableWidget, 1);
 
     dataLayout->addLayout(tableLayout);
     frozenTableWidget->setFixedWidth(200);
+
     stackedWidget->addWidget(dataPage);
 }
-
 void MainWindow::setupFrozenTable()
 {
     frozenTableWidget = new QTableWidget();
@@ -915,7 +917,7 @@ void MainWindow::setupFrozenTable()
     frozenTableWidget->verticalHeader()->setVisible(false);
     frozenTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     frozenTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    frozenTableWidget->setSelectionMode(QAbstractItemView::NoSelection);  // Disable default selection
+    frozenTableWidget->setSelectionMode(QAbstractItemView::NoSelection);
 
     frozenTableWidget->setStyleSheet(
         "QTableWidget { background:white; color:black; gridline-color:#d0d0d0; }"
@@ -932,7 +934,7 @@ void MainWindow::setupFrozenTable()
 void MainWindow::setupDataTable()
 {
     dataTableWidget = new QTableWidget();
-    headers.clear();   // Add this line
+    headers.clear();
 
     headers << "DATE" << "TIME" << "SPEED" << "OHE_VOLT" << "OHE_CURR" << "ENER_CONS"
             << "BAT_VOLT" << "BP_PRES" << "TE_BE_DEM" << "TE_BE_BG1" << "TE_BE_BG2"
@@ -952,7 +954,11 @@ void MainWindow::setupDataTable()
     for(int i = 0; i < 43; i++) {
         dataTableWidget->setColumnWidth(i, DEFAULT_COLUMN_WIDTH);
     }
+
+    dataTableWidget->setSelectionBehavior(QAbstractItemView::SelectItems);
+    dataTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 }
+
 void MainWindow::setupSettingsPage()
 {
     QWidget *settingsPage = new QWidget;
@@ -1077,6 +1083,7 @@ void MainWindow::setupHighlightingGroup(QVBoxLayout *settingsLayout)
     highlightLayout->addLayout(colorLayout);
     settingsLayout->addWidget(highlightGroup);
 }
+
 void MainWindow::setupSettingsButtons(QVBoxLayout *settingsLayout)
 {
     QHBoxLayout *buttonLayout = new QHBoxLayout();
@@ -1101,6 +1108,7 @@ void MainWindow::setupSettingsButtons(QVBoxLayout *settingsLayout)
     settingsLayout->addLayout(buttonLayout);
     settingsLayout->addStretch();
 }
+
 void MainWindow::setupConnections()
 {
     connect(pushButtonBrowse, &QPushButton::clicked, this, &MainWindow::browseFile);
@@ -1255,6 +1263,43 @@ QString MainWindow::fixTimeFormat(const QString& time)
     return fixed;
 }
 
+// ==================== MEMORY MANAGEMENT ====================
+
+bool MainWindow::hasSufficientMemory()
+{
+    struct sysinfo info;
+    if (sysinfo(&info) == 0) {
+        unsigned long freeMemoryMB = info.freeram * info.mem_unit / (1024 * 1024);
+        unsigned long totalMemoryMB = info.totalram * info.mem_unit / (1024 * 1024);
+
+        qDebug() << "Total Memory:" << totalMemoryMB << "MB";
+        qDebug() << "Free Memory:" << freeMemoryMB << "MB";
+
+        if (freeMemoryMB < 300) {
+            QMessageBox::warning(this, "Low Memory",
+                                 QString("System has only %1 MB of free memory.\n"
+                                         "Loading large files may cause the application to crash.\n"
+                                         "Please close other applications and try again.")
+                                     .arg(freeMemoryMB));
+            return false;
+        }
+        return true;
+    }
+    return true;
+}
+
+void MainWindow::freeMemory()
+{
+    if (!m_fullFileData.isEmpty()) {
+        m_fullFileData.clear();
+        m_fullFileData.squeeze();
+    }
+    m_cachedData.clear();
+    m_rowCache.clear();
+}
+
+// ==================== OPTIMIZED LOAD FILE - STREAMING APPROACH ====================
+
 void MainWindow::loadFile()
 {
     if(!QFile::exists(currentFile)) {
@@ -1263,99 +1308,200 @@ void MainWindow::loadFile()
         return;
     }
 
+    if (!hasSufficientMemory()) {
+        setupEmptyTable();
+        return;
+    }
+
     QFile file(currentFile);
-    if(!file.open(QIODevice::ReadOnly)) {
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         statusBar()->showMessage("Cannot open file");
         return;
     }
 
-    showLoadingOverlay("Preparing to load file...");
+    qint64 fileSize = file.size();
+    double fileSizeMB = fileSize / (1024.0 * 1024.0);
+    showLoadingOverlay(QString("Scanning %1 MB file...").arg(fileSizeMB, 0, 'f', 2));
 
-    QByteArray firstLine = file.readLine();
-    file.close();
+    QTextStream stream(&file);
+    QString firstLine = stream.readLine();
+    bool hasHeaders = (firstLine.contains("DATE", Qt::CaseInsensitive) &&
+                       firstLine.contains("TIME", Qt::CaseInsensitive) &&
+                       firstLine.contains("SPEED", Qt::CaseInsensitive));
 
-    QString firstLineStr = QString::fromUtf8(firstLine).trimmed();
-    bool hasHeaders = (firstLineStr.contains("DATE", Qt::CaseInsensitive) &&
-                       firstLineStr.contains("TIME", Qt::CaseInsensitive) &&
-                       firstLineStr.contains("SPEED", Qt::CaseInsensitive));
+    file.seek(0);
+    stream.seek(0);
 
-    if(!file.open(QIODevice::ReadOnly)) {
+    // First pass: Count rows efficiently
+    updateLoadingProgress(5, "Counting rows in file...");
+
+    m_totalRowsInFile = 0;
+    QString line;
+    bool isFirstLine = true;
+
+    // Use QFile directly for faster reading
+    QFile fastFile(currentFile);
+    if (!fastFile.open(QIODevice::ReadOnly)) {
         hideLoadingOverlay();
-        statusBar()->showMessage("Cannot open file");
+        setupEmptyTable();
         return;
     }
 
-    updateLoadingProgress(5, "Reading file data...");
+    QTextStream fastStream(&fastFile);
+    //fastStream.setCodec("UTF-8");
 
-    QByteArray data = file.readAll();
-    file.close();
+    if (hasHeaders) {
+        fastStream.readLine();
+    }
 
-    updateLoadingProgress(15, "Processing file content...");
+    // Count rows quickly
+    while (!fastStream.atEnd()) {
+        if (fastStream.readLineInto(&line)) {
+            if (!line.trimmed().isEmpty()) {
+                m_totalRowsInFile++;
 
-    QString text = QString::fromUtf8(data);
-    text.replace("\r", "");
-    text.remove(QRegularExpression("===== Page \\d+ =====\\n?"));
+                if (m_totalRowsInFile % 50000 == 0) {
+                    updateLoadingProgress(5 + qMin(10, m_totalRowsInFile / 50000),
+                                          QString("Scanning... %1 rows found").arg(m_totalRowsInFile));
+                    qApp->processEvents();
+                }
 
-    updateLoadingProgress(25, "Parsing data lines...");
+                if (m_totalRowsInFile > 5000000) {
+                    QMessageBox::StandardButton reply = QMessageBox::question(this, "Very Large File",
+                                                                              QString("This file contains over 5 million rows (%1 rows found).\n"
+                                                                                      "This may cause performance issues.\n\n"
+                                                                                      "Do you want to continue?")
+                                                                                  .arg(m_totalRowsInFile),
+                                                                              QMessageBox::Yes | QMessageBox::No);
+                    if (reply == QMessageBox::No) {
+                        fastFile.close();
+                        file.close();
+                        hideLoadingOverlay();
+                        setupEmptyTable();
+                        return;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    fastFile.close();
 
-    QStringList lines = text.split("\n", Qt::SkipEmptyParts);
+    qDebug() << "Total rows in file:" << m_totalRowsInFile;
 
-    updateLoadingProgress(30, "Setting up tables...");
-
-    clearTables();
-    clearAllFilters();
-
-    int startLine = hasHeaders ? 1 : 0;
-
-    updateLoadingProgress(35, "Loading data...");
-
-    m_maxRowsLoaded = 0;
-    int totalLines = lines.size();
-    int linesToProcess = totalLines - startLine;
-
-    if (linesToProcess <= 0) {
+    if (m_totalRowsInFile == 0) {
+        file.close();
         hideLoadingOverlay();
         statusBar()->showMessage("No data rows found in file");
         setupEmptyTable();
         return;
     }
 
+    int rowsToLoad = qMin(m_totalRowsInFile, MAX_VISIBLE_ROWS);
+
+    if (m_totalRowsInFile > MAX_VISIBLE_ROWS) {
+        QMessageBox::information(this, "Large File Detected",
+                                 QString("File has %1 rows.\n\n"
+                                         "For optimal performance, only the first %2 rows will be loaded initially.\n"
+                                         "Use the scroll bar to load more rows as needed.")
+                                     .arg(m_totalRowsInFile).arg(rowsToLoad));
+    }
+
+    updateLoadingProgress(15, QString("Loading %1 of %2 rows...").arg(rowsToLoad).arg(m_totalRowsInFile));
+
+    file.seek(0);
+    stream.seek(0);
+
     frozenTableWidget->setUpdatesEnabled(false);
     dataTableWidget->setUpdatesEnabled(false);
     frozenTableWidget->setSortingEnabled(false);
     dataTableWidget->setSortingEnabled(false);
 
-    for(int chunkStart = startLine; chunkStart < totalLines && m_maxRowsLoaded < MAX_ROWS; chunkStart += CHUNK_SIZE) {
-        int chunkEnd = qMin(chunkStart + CHUNK_SIZE, totalLines);
+    m_maxRowsLoaded = 0;
+    bool isDarkTheme = (m_currentTheme == "Dark");
 
-        for(int i = chunkStart; i < chunkEnd && m_maxRowsLoaded < MAX_ROWS; i++) {
-            QString line = lines[i].trimmed();
-            if(line.isEmpty()) continue;
+    if (hasHeaders) {
+        stream.readLine();
+    }
 
-            QStringList values = line.split(",", Qt::SkipEmptyParts);
-            if(values.size() < 2) continue;
+    clearTables();
+    m_fullFileData.clear();
 
-            frozenTableWidget->insertRow(m_maxRowsLoaded);
-            dataTableWidget->insertRow(m_maxRowsLoaded);
+    int rowsProcessed = 0;
+    int totalLoaded = 0;
+    const int CHUNK_SIZE_STREAM = 2000;
+
+    QList<QString> chunkLines;
+    chunkLines.reserve(CHUNK_SIZE_STREAM);
+
+    bool storeFullData = (m_totalRowsInFile <= 500000);
+    if (storeFullData) {
+        m_fullFileData.reserve(m_totalRowsInFile);
+    }
+
+    while (!stream.atEnd() && rowsToLoad > 0) {
+        chunkLines.clear();
+
+        while (chunkLines.size() < CHUNK_SIZE_STREAM && !stream.atEnd() && rowsToLoad > 0) {
+            if (stream.readLineInto(&line)) {
+                QString trimmed = line.trimmed();
+                if (!trimmed.isEmpty()) {
+                    chunkLines.append(trimmed);
+                    if (storeFullData) {
+                        m_fullFileData.append(trimmed);
+                    }
+                    rowsToLoad--;
+                }
+            }
+        }
+
+        for (const QString& chunkLine : chunkLines) {
+            QStringList values = chunkLine.split(",", Qt::SkipEmptyParts);
+            if (values.size() < 2) continue;
+
+            frozenTableWidget->insertRow(totalLoaded);
+            dataTableWidget->insertRow(totalLoaded);
 
             QString fixedTime = fixTimeFormat(values[1].trimmed());
-            addFrozenRow(m_maxRowsLoaded, values[0].trimmed(), fixedTime);
+            QTableWidgetItem *dateItem = new QTableWidgetItem(values[0].trimmed());
+            QTableWidgetItem *timeItem = new QTableWidgetItem(fixedTime);
 
-            bool isDarkTheme = (m_currentTheme == "Dark");
+            if (isDarkTheme) {
+                dateItem->setForeground(QBrush(QColor(255, 255, 255)));
+                timeItem->setForeground(QBrush(QColor(255, 255, 255)));
+            }
+
+            frozenTableWidget->setItem(totalLoaded, 0, dateItem);
+            frozenTableWidget->setItem(totalLoaded, 1, timeItem);
+
             for(int col = 0; col < 43; col++) {
                 QString value = (col + 2 < values.size()) ? values[col + 2].trimmed() : "";
                 QTableWidgetItem *item = new QTableWidgetItem(value);
                 item->setForeground(isDarkTheme ? QBrush(QColor(255, 255, 255)) : QBrush(QColor(0, 0, 0)));
                 item->setToolTip(value);
-                dataTableWidget->setItem(m_maxRowsLoaded, col, item);
+                dataTableWidget->setItem(totalLoaded, col, item);
             }
-            m_maxRowsLoaded++;
+            totalLoaded++;
+            rowsProcessed++;
         }
 
-        int percent = 35 + ((m_maxRowsLoaded * 60) / qMax(1, linesToProcess));
+        int percent = 15 + ((rowsProcessed * 80) / qMax(1, m_totalRowsInFile));
         percent = qMin(percent, 95);
-        updateLoadingProgress(percent, QString("Loading data... (%1 rows loaded)").arg(m_maxRowsLoaded));
+        updateLoadingProgress(percent, QString("Loading data... (%1 of %2 rows)")
+                                           .arg(rowsProcessed).arg(qMin(m_totalRowsInFile, MAX_VISIBLE_ROWS)));
         qApp->processEvents();
+    }
+
+    file.close();
+
+    m_maxRowsLoaded = totalLoaded;
+    m_fileFullyLoaded = (m_totalRowsInFile <= MAX_VISIBLE_ROWS);
+
+    qDebug() << "Rows loaded:" << m_maxRowsLoaded;
+    qDebug() << "File fully loaded:" << m_fileFullyLoaded;
+
+    if (m_totalRowsInFile > MAX_VISIBLE_ROWS) {
+        setupVirtualScrolling();
     }
 
     updateLoadingProgress(95, "Finalizing table setup...");
@@ -1388,7 +1534,167 @@ void MainWindow::loadFile()
     updateLoadingProgress(100, "Loading complete!");
     hideLoadingOverlay();
 
-    statusBar()->showMessage(QString("Loaded %1 rows from: %2").arg(m_maxRowsLoaded).arg(currentFile));
+    QString statusMsg = QString("Loaded %1 of %2 rows from: %3")
+                            .arg(m_maxRowsLoaded)
+                            .arg(m_totalRowsInFile)
+                            .arg(currentFile);
+    statusBar()->showMessage(statusMsg);
+
+    if (m_totalRowsInFile > MAX_VISIBLE_ROWS) {
+        statusBar()->showMessage(statusMsg + " (Virtual scrolling active - scroll down to load more)", 5000);
+    }
+}
+
+// ==================== VIRTUAL SCROLLING ====================
+
+void MainWindow::setupVirtualScrolling()
+{
+    connect(dataTableWidget->verticalScrollBar(), &QScrollBar::valueChanged,
+            this, &MainWindow::handleVirtualScroll);
+    connect(frozenTableWidget->verticalScrollBar(), &QScrollBar::valueChanged,
+            this, &MainWindow::handleVirtualScroll);
+}
+
+void MainWindow::handleVirtualScroll(int value)
+{
+    if (m_fileFullyLoaded) return;
+    if (m_totalRowsInFile <= MAX_VISIBLE_ROWS) return;
+
+    int rowHeight = dataTableWidget->rowHeight(0);
+    if (rowHeight == 0) rowHeight = 20;
+
+    int visibleRows = dataTableWidget->height() / rowHeight;
+    int currentRow = value / rowHeight;
+
+    int loadThreshold = qMax(visibleRows / 2, 50);
+    int endLoadRow = qMin(m_totalRowsInFile, currentRow + visibleRows + loadThreshold);
+
+    if (currentRow + visibleRows > m_maxRowsLoaded - 100) {
+        loadMoreRows();
+    }
+}
+
+void MainWindow::loadMoreRows()
+{
+    if (m_fileFullyLoaded) return;
+    if (m_maxRowsLoaded >= m_totalRowsInFile) {
+        m_fileFullyLoaded = true;
+        return;
+    }
+
+    int rowsToAdd = qMin(CHUNK_SIZE_LOAD, m_totalRowsInFile - m_maxRowsLoaded);
+
+    showLoadingOverlay(QString("Loading more data... (%1 rows remaining)")
+                           .arg(m_totalRowsInFile - m_maxRowsLoaded));
+
+    QFile file(currentFile);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        hideLoadingOverlay();
+        return;
+    }
+
+    QTextStream stream(&file);
+
+    QString firstLine = stream.readLine();
+    bool hasHeaders = (firstLine.contains("DATE", Qt::CaseInsensitive) &&
+                       firstLine.contains("TIME", Qt::CaseInsensitive) &&
+                       firstLine.contains("SPEED", Qt::CaseInsensitive));
+
+    file.seek(0);
+    stream.seek(0);
+
+    if (hasHeaders) {
+        stream.readLine();
+        int linesToSkip = m_maxRowsLoaded + 1;
+        for (int i = 0; i < linesToSkip; i++) {
+            if (stream.atEnd()) break;
+            stream.readLine();
+        }
+    } else {
+        int linesToSkip = m_maxRowsLoaded;
+        for (int i = 0; i < linesToSkip; i++) {
+            if (stream.atEnd()) break;
+            stream.readLine();
+        }
+    }
+
+    bool isDarkTheme = (m_currentTheme == "Dark");
+    int rowsAdded = 0;
+
+    while (rowsAdded < rowsToAdd && !stream.atEnd()) {
+        QString line;
+        if (!stream.readLineInto(&line)) break;
+
+        QString trimmed = line.trimmed();
+        if (trimmed.isEmpty()) continue;
+
+        QStringList values = trimmed.split(",", Qt::SkipEmptyParts);
+        if (values.size() < 2) continue;
+
+        int newRow = m_maxRowsLoaded + rowsAdded;
+
+        frozenTableWidget->insertRow(newRow);
+        dataTableWidget->insertRow(newRow);
+
+        QString fixedTime = fixTimeFormat(values[1].trimmed());
+        QTableWidgetItem *dateItem = new QTableWidgetItem(values[0].trimmed());
+        QTableWidgetItem *timeItem = new QTableWidgetItem(fixedTime);
+
+        if (isDarkTheme) {
+            dateItem->setForeground(QBrush(QColor(255, 255, 255)));
+            timeItem->setForeground(QBrush(QColor(255, 255, 255)));
+        }
+
+        frozenTableWidget->setItem(newRow, 0, dateItem);
+        frozenTableWidget->setItem(newRow, 1, timeItem);
+
+        for(int col = 0; col < 43; col++) {
+            QString value = (col + 2 < values.size()) ? values[col + 2].trimmed() : "";
+            QTableWidgetItem *item = new QTableWidgetItem(value);
+            item->setForeground(isDarkTheme ? QBrush(QColor(255, 255, 255)) : QBrush(QColor(0, 0, 0)));
+            item->setToolTip(value);
+            dataTableWidget->setItem(newRow, col, item);
+        }
+
+        rowsAdded++;
+
+        if (rowsAdded % 100 == 0) {
+            int percent = ((rowsAdded * 100) / rowsToAdd);
+            updateLoadingProgress(percent, QString("Loading chunk... (%1 of %2 rows)")
+                                               .arg(rowsAdded).arg(rowsToAdd));
+            qApp->processEvents();
+        }
+    }
+
+    file.close();
+
+    m_maxRowsLoaded += rowsAdded;
+
+    if (m_maxRowsLoaded >= m_totalRowsInFile) {
+        m_fileFullyLoaded = true;
+    }
+
+    hideLoadingOverlay();
+    syncRowHeights();
+    rebuildFilterMaps();
+
+    statusBar()->showMessage(QString("Loaded %1 of %2 rows").arg(m_maxRowsLoaded).arg(m_totalRowsInFile));
+}
+
+void MainWindow::clearTables()
+{
+    if (frozenTableWidget) {
+        frozenTableWidget->clearContents();
+        frozenTableWidget->setRowCount(0);
+    }
+    if (dataTableWidget) {
+        dataTableWidget->clearContents();
+        dataTableWidget->setRowCount(0);
+    }
+    m_columnFilters.clear();
+    m_columnUniqueValues.clear();
+    m_searchHighlightedItems.clear();
+    m_maxRowsLoaded = 0;
 }
 
 void MainWindow::addFrozenRow(int row, const QString& date, const QString& time)
@@ -1405,21 +1711,6 @@ QTableWidgetItem* MainWindow::createTableItem(const QString& text)
     item->setForeground((m_currentTheme == "Dark") ? QBrush(QColor(255, 255, 255)) : QBrush(QColor(0, 0, 0)));
     item->setToolTip(text);
     return item;
-}
-
-void MainWindow::clearTables()
-{
-    if (frozenTableWidget) {
-        frozenTableWidget->clearContents();
-        frozenTableWidget->setRowCount(0);
-    }
-    if (dataTableWidget) {
-        dataTableWidget->clearContents();
-        dataTableWidget->setRowCount(0);
-    }
-    m_columnFilters.clear();
-    m_columnUniqueValues.clear();
-    m_searchHighlightedItems.clear();
 }
 
 void MainWindow::syncRowHeights()
@@ -1472,7 +1763,6 @@ void MainWindow::showLoginDialog()
     loginDialog.updateCredentials(m_adminUsername, m_adminPassword, m_userUsername, m_userPassword);
     loginDialog.setModal(true);
 
-    // Qt 6 way to center the dialog on screen
     QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
     int x = (screenGeometry.width() - loginDialog.width()) / 2;
     int y = (screenGeometry.height() - loginDialog.height()) / 2;
@@ -1715,7 +2005,6 @@ void MainWindow::applyTheme(bool checked)
             }
         }
 
-        // Reapply current highlight if any
         if (m_highlightingEnabled && m_currentHighlightedRow >= 0) {
             if (m_currentHighlightedColumn >= 0) {
                 applyCrossHighlight(m_currentHighlightedRow, m_currentHighlightedColumn);
@@ -1817,7 +2106,6 @@ void MainWindow::clearSearch()
 
 void MainWindow::clearRowColumnHighlights()
 {
-    // Clear frozen table highlights
     for (int r = 0; r < frozenTableWidget->rowCount(); r++) {
         for (int c = 0; c < frozenTableWidget->columnCount(); c++) {
             QTableWidgetItem *item = frozenTableWidget->item(r, c);
@@ -1828,7 +2116,6 @@ void MainWindow::clearRowColumnHighlights()
         }
     }
 
-    // Clear data table highlights
     for (int r = 0; r < dataTableWidget->rowCount(); r++) {
         for (int c = 0; c < dataTableWidget->columnCount(); c++) {
             QTableWidgetItem *item = dataTableWidget->item(r, c);
@@ -1842,7 +2129,6 @@ void MainWindow::clearRowColumnHighlights()
     m_currentHighlightedRow = -1;
     m_currentHighlightedColumn = -1;
 
-    // Force repaint
     dataTableWidget->viewport()->update();
     frozenTableWidget->viewport()->update();
 }
@@ -1855,10 +2141,8 @@ void MainWindow::applyCrossHighlight(int row, int column)
     qDebug() << "Row color:" << m_rowHighlightColor.name();
     qDebug() << "Column color:" << m_columnHighlightColor.name();
 
-    // First, clear all existing highlights
     clearRowColumnHighlights();
 
-    // Highlight entire row
     QBrush rowBrush(m_rowHighlightColor);
     for (int c = 0; c < dataTableWidget->columnCount(); c++) {
         QTableWidgetItem *item = dataTableWidget->item(row, c);
@@ -1876,7 +2160,6 @@ void MainWindow::applyCrossHighlight(int row, int column)
         }
     }
 
-    // Highlight column (other rows)
     QBrush columnBrush(m_columnHighlightColor);
     for (int r = 0; r < dataTableWidget->rowCount(); r++) {
         if (r != row) {
@@ -1888,17 +2171,15 @@ void MainWindow::applyCrossHighlight(int row, int column)
         }
     }
 
-    // Highlight the intersection cell with a distinct color
     QTableWidgetItem *cell = dataTableWidget->item(row, column);
     if (cell) {
-        cell->setBackground(QBrush(QColor(0, 112, 192)));  // Deep blue
+        cell->setBackground(QBrush(QColor(0, 112, 192)));
         cell->setForeground(Qt::white);
     }
 
     m_currentHighlightedRow = row;
     m_currentHighlightedColumn = column;
 
-    // Force repaint
     dataTableWidget->viewport()->update();
     frozenTableWidget->viewport()->update();
 }
@@ -1919,7 +2200,6 @@ void MainWindow::onFrozenTableCellClicked(int row, int column)
 
     clearRowColumnHighlights();
 
-    // Highlight entire row only
     QBrush rowBrush(m_rowHighlightColor);
     for (int c = 0; c < dataTableWidget->columnCount(); c++) {
         QTableWidgetItem *item = dataTableWidget->item(row, c);
@@ -1944,7 +2224,6 @@ void MainWindow::onFrozenTableCellClicked(int row, int column)
     QString time = frozenTableWidget->item(row, 1) ? frozenTableWidget->item(row, 1)->text() : "";
     statusBar()->showMessage(QString("Row %1 selected - Date: %2, Time: %3").arg(row + 1).arg(date).arg(time), 3000);
 
-    // Force repaint
     dataTableWidget->viewport()->update();
     frozenTableWidget->viewport()->update();
 }
@@ -2358,22 +2637,39 @@ void MainWindow::exportCSV()
         return;
     }
 
+    showLoadingOverlay("Exporting data...");
+
     QTextStream out(&file);
     out << headers.join(",") << "\n";
 
-    for(int row = 0; row < frozenTableWidget->rowCount(); row++) {
+    int totalRows = frozenTableWidget->rowCount();
+    int exportedRows = 0;
+
+    for(int row = 0; row < totalRows; row++) {
         if (dataTableWidget->isRowHidden(row)) continue;
+
+        if (exportedRows % 1000 == 0) {
+            int percent = (exportedRows * 100) / totalRows;
+            updateLoadingProgress(percent, QString("Exporting row %1 of %2...").arg(exportedRows).arg(totalRows));
+            qApp->processEvents();
+        }
+
         QStringList rowData;
         rowData << (frozenTableWidget->item(row, 0) ? frozenTableWidget->item(row, 0)->text() : "");
         rowData << (frozenTableWidget->item(row, 1) ? frozenTableWidget->item(row, 1)->text() : "");
+
         for(int col = 0; col < dataTableWidget->columnCount(); col++) {
             QTableWidgetItem *item = dataTableWidget->item(row, col);
             rowData << (item ? item->text() : "");
         }
         out << rowData.join(",") << "\n";
+        exportedRows++;
     }
+
     file.close();
-    QMessageBox::information(this, "Success", "CSV exported successfully!");
+    hideLoadingOverlay();
+
+    QMessageBox::information(this, "Success", QString("CSV exported successfully!\n%1 rows exported.").arg(exportedRows));
 }
 
 void MainWindow::updateColorButtons()
