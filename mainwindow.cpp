@@ -1269,30 +1269,32 @@ QString MainWindow::fixTimeFormat(const QString& time)
 
 bool MainWindow::hasSufficientMemory()
 {
-    #ifdef Q_OS_LINUX
-struct sysinfo info;
-sysinfo(&info);
-qDebug() << info.totalram;
-#else
-qDebug() << "Windows build";
-#endif
+#ifdef Q_OS_LINUX
+    struct sysinfo info;
+
     if (sysinfo(&info) == 0) {
-        unsigned long freeMemoryMB = info.freeram * info.mem_unit / (1024 * 1024);
-        unsigned long totalMemoryMB = info.totalram * info.mem_unit / (1024 * 1024);
+        unsigned long freeMemoryMB =
+            info.freeram * info.mem_unit / (1024 * 1024);
+        unsigned long totalMemoryMB =
+            info.totalram * info.mem_unit / (1024 * 1024);
 
         qDebug() << "Total Memory:" << totalMemoryMB << "MB";
         qDebug() << "Free Memory:" << freeMemoryMB << "MB";
 
         if (freeMemoryMB < 300) {
-            QMessageBox::warning(this, "Low Memory",
-                                 QString("System has only %1 MB of free memory.\n"
-                                         "Loading large files may cause the application to crash.\n"
-                                         "Please close other applications and try again.")
-                                     .arg(freeMemoryMB));
+            QMessageBox::warning(
+                this,
+                "Low Memory",
+                QString("System has only %1 MB of free memory.\n"
+                        "Loading large files may cause the application to crash.\n"
+                        "Please close other applications and try again.")
+                    .arg(freeMemoryMB));
             return false;
         }
-        return true;
     }
+#endif
+
+    // Windows (or if sysinfo fails on Linux): allow loading.
     return true;
 }
 
