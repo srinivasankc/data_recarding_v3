@@ -10,7 +10,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -34,17 +35,22 @@ jobs:
       - name: Deploy Qt
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force Release
-
           $exe = Get-ChildItem build -Recurse -Filter "traintechdata.exe" | Select-Object -First 1
 
           if (-not $exe) {
-            throw "traintechdata.exe not found!"
+              throw "traintechdata.exe not found!"
           }
 
-          windeployqt $exe.FullName
+          Write-Host "Found EXE:" $exe.FullName
 
-          Copy-Item $exe.FullName Release\
+          New-Item -ItemType Directory -Force Release | Out-Null
+
+          & windeployqt --release --dir Release $exe.FullName
+
+          Copy-Item $exe.FullName Release\ -Force
+
+          Write-Host "Release folder contents:"
+          Get-ChildItem Release -Recurse
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
