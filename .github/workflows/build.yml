@@ -35,9 +35,16 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force Release
-          $exe = Get-ChildItem build -Recurse *.exe | Select-Object -First 1
+
+          $exe = Get-ChildItem build -Recurse -Filter "traintechdata.exe" | Select-Object -First 1
+
+          if (-not $exe) {
+            throw "traintechdata.exe not found!"
+          }
+
           windeployqt $exe.FullName
-          Copy-Item $exe.FullName Release
+
+          Copy-Item $exe.FullName Release\
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
