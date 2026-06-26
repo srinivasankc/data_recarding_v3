@@ -2,9 +2,9 @@ name: Build Windows EXE
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -12,49 +12,48 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '5.15.2'
-          arch: win64_mingw81
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.10.2'
+        arch: win64_mingw
 
-      - name: Setup MinGW
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          platform: x64
+    - name: Setup MinGW
+      uses: egor-tensin/setup-mingw@v2
+      with:
+        platform: x64
 
-      - name: Show Versions
-        shell: cmd
-        run: |
-          qmake -v
-          gcc --version
+    - name: Configure
+      shell: cmd
+      run: |
+        cmake -B build ^
+          -G "MinGW Makefiles" ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -DCMAKE_PREFIX_PATH=%Qt6_DIR%
 
-      - name: Configure
-        shell: cmd
-        run: |
-          qmake traintechdata.pro
+    - name: Build
+      shell: cmd
+      run: |
+        cmake --build build --config Release
 
-      - name: Build
-        shell: cmd
-        run: |
-          mingw32-make -j4
+    - name: Find EXE
+      shell: cmd
+      run: |
+        dir build /s *.exe
 
-      - name: Create Release Folder
-        shell: cmd
-        run: |
+    - name: Deploy Qt
+      shell: cmd
+      run: |
+        for /r build %%f in (*.exe) do (
+          windeployqt "%%f"
           mkdir Release
-          copy release\traintechdata.exe Release\ || copy traintechdata.exe Release\
+          copy "%%f" Release\
+        )
 
-      - name: Deploy Qt
-        shell: cmd
-        run: |
-          windeployqt Release\traintechdata.exe
-
-      - name: Upload EXE
-        uses: actions/upload-artifact@v4
-        with:
-          name: TrainTechData-Windows
-          path: Release
+    - name: Upload EXE
+      uses: actions/upload-artifact@v4
+      with:
+        name: TrainTechData-Windows
+        path: Release
